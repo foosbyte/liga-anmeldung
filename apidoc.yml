@@ -1,0 +1,224 @@
+swagger: "2.0"
+info:
+  description: "service for registering foosball teams for the upcoming season.
+  \nFLow:
+  \n  * User logs in
+  \n  * First site is a list of teams, the user is in charge for
+  \n  * On the team site the user can see the current lineup and create a lineup for the upcoming season
+  \n  * On a player-profile site, the user can see all the necessary player-credentials
+  \n"
+  version: "0.0.1"
+  title: "league-registration"
+host: yi.pi.yi.pi.yeah
+basePath: /league-registration
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  # A simple username/password combo for logging in
+  login:
+    required: [username, password]
+    properties:
+      username:
+        type: string
+        minLength: 1
+      password:
+        type: string
+        minLength: 1
+  player:
+    properties:
+      id:
+        type: string
+      playerNr:
+        type: string
+      surname:
+        type: string
+      forename:
+        type: string
+      club:
+        type: string
+      gender:
+        type: string
+      birthdate:
+        type: string
+      contactDetails:
+        $ref: '#/definitions/contactDetails'
+  contactDetails:
+    properties:
+      id:
+        type: string
+      emailAddress:
+        type: string
+      phone:
+        type: number
+  team:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      homeWeekday:
+        type: number
+      hometableName:
+        type: string
+      homeLocationId:
+        type: string
+  club:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+  location:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      street:
+        type: string
+      city:
+        type: string
+      zip:
+        type: number
+  lineup:
+    properties:
+      id:
+        type: string
+      season:
+        type: string
+      players:
+        type: array
+        items:
+          $ref: '#/definitions/player'
+  playerSearchResult:
+    properties:
+      resultCount:
+        type: number
+      players:
+        type: array
+        items:
+          $ref: '#/definitions/player'
+
+
+
+
+# NOTE: This does NOT set global parameters for all operations.
+# It just defines parameter templates that can be referenced by operations (i.e. it saves typing)
+parameters:
+  sessionCookie: &sessionCookie
+    name: Cookie
+    in: header
+    required: true
+    type: string
+    description: The session cookie
+
+  # username: &username
+   # name: username
+    # in: path
+    # required: true
+    # type: string
+    # description: This is the {username} path parameter
+
+paths:
+  /login:
+    post:
+      summary: Logs in
+      description: |
+        Try logging in with username "jdoe" and password "jdoe".
+        Then try logging in with username "admin" and password "admin".
+      parameters:
+        - name: body
+          in: body
+          required: true
+          description: The login credentials
+          schema:
+            $ref: '#/definitions/login'
+      responses:
+        200:
+          description: Login was successful
+          headers:
+            Set-Cookie:
+              type: string
+              description: The session cookie
+              default: demo-session-id=123456789012345678901234567890
+
+  /logout:
+    post:
+      summary: Logs out the given user
+      description: >
+        Users can only log themselves out, not other users. Except the "admin" user, who can log-out anyone.
+      parameters:
+        - *sessionCookie
+      responses:
+        204:
+          description: Logout was successful
+          headers:
+            Set-Cookie:
+              type: string
+              description: Deletes the session cookie (by making expire in the past)
+              default: demo-session-id=deleted; Expires=Thu, 01-Jan-1970 00:00:01 GMT; Path=/
+        401:
+          description: You tried to log someone else out, and you're not the "admin" user.
+        404:
+          description: The {username} was not found
+  /team:
+    get:
+      summary: gets the teams the user is responsible for
+      description: todo
+      responses:
+        200:
+          description: OK
+  /team/{teamId}:
+    get:
+      summary: gets a team with all informations and related players for the current and the upcoming season
+      description: todo
+      parameters:
+        - name: teamId
+          in: path
+          description: String input for echo service
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+    post:
+      summary: post the lineup for the upcoming season
+      description: todo
+      responses:
+        200:
+          description: OK
+    patch:
+      summary: patches the lineup for the upcoming season with new information
+      description: todo
+      responses:
+        200:
+          description: OK
+
+    delete:
+      summary: deletes the lineup for the upcoming season
+      description: todo
+      responses:
+        200:
+          description: OK
+
+  /player/search:
+    get:
+      summary:
+      parameters:
+        - name: forename
+          in: query
+          minLength: 3
+          required: true
+        - name: surname
+          in: query
+          minLength: 3
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/playerSearchResult'

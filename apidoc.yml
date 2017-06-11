@@ -32,23 +32,19 @@ definitions:
     properties:
       id:
         type: string
-      playerNr:
+      nationalPlayerNr:
         type: string
-      surname:
+      internationalPlayerNr:
         type: string
-      forename:
+      lastname:
+        type: string
+      firstname:
         type: string
       club:
         type: string
       gender:
         type: string
       birthdate:
-        type: string
-      contactDetails:
-        $ref: '#/definitions/contactDetails'
-  contactDetails:
-    properties:
-      id:
         type: string
       emailAddress:
         type: string
@@ -60,12 +56,18 @@ definitions:
         type: string
       name:
         type: string
+      club:
+        $ref: '#/definitions/club'
       homeWeekday:
         type: number
-      hometableName:
-        type: string
-      homeLocationId:
-        type: string
+      hometable:
+        $ref: '#/definitions/tableType'
+      homeLocation:
+        $ref: '#/definitions/location'
+      lineupList:
+        type: array
+        items:
+          $ref: '#/definitions/lineup'
   club:
     properties:
       id:
@@ -83,28 +85,31 @@ definitions:
       city:
         type: string
       zip:
-        type: number
+        type: string
+  tableType:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
   lineup:
     properties:
       id:
         type: string
+      team:
+        $ref: '#/definitions/team'
       season:
-        type: string
+        $ref: '#/definitions/season'
       players:
         type: array
         items:
           $ref: '#/definitions/player'
-  playerSearchResult:
+  season:
     properties:
-      resultCount:
-        type: number
-      players:
-        type: array
-        items:
-          $ref: '#/definitions/player'
-
-
-
+      id:
+        type: string
+      name:
+        type: string
 
 # NOTE: This does NOT set global parameters for all operations.
 # It just defines parameter templates that can be referenced by operations (i.e. it saves typing)
@@ -122,7 +127,22 @@ parameters:
     # required: true
     # type: string
     # description: This is the {username} path parameter
-
+  offsetParam:
+    in: query
+    name: offset
+    required: false
+    type: integer
+    minimum: 0
+    description: The number of items to skip before starting to collect the result set.
+  limitParam:
+    in: query
+    name: limit
+    required: false
+    type: integer
+    minimum: 1
+    maximum: 50
+    default: 20
+    description: The numbers of items to return.
 paths:
   /login:
     post:
@@ -172,6 +192,18 @@ paths:
       responses:
         200:
           description: OK
+    post:
+      responses:
+        200:
+          description: OK
+    patch:
+      responses:
+        200:
+          description: OK
+    delete:
+      responses:
+        200:
+          description: OK
   /team/{teamId}:
     get:
       summary: gets a team with all informations and related players for the current and the upcoming season
@@ -193,32 +225,116 @@ paths:
           description: OK
     patch:
       summary: patches the lineup for the upcoming season with new information
-      description: todo
       responses:
         200:
           description: OK
-
     delete:
       summary: deletes the lineup for the upcoming season
+      responses:
+        200:
+          description: OK
+  /lineup/{lineupId}:
+    get:
+      summary: gets a lineup
+      description: todo
+      parameters:
+        - name: lineupId
+          in: path
+          description: String input for echo service
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+    post:
+      summary: post the lineup for the upcoming season
       description: todo
       responses:
         200:
           description: OK
-
+    patch:
+      summary: patches the lineup for the upcoming season with new information
+      responses:
+        200:
+          description: OK
+    delete:
+      summary: deletes the lineup for the upcoming season
+      responses:
+        200:
+          description: OK
+  /player:
+    get:
+      description: todo
+      responses:
+        200:
+          description: OK
+    post:
+      responses:
+        200:
+          description: OK
+    patch:
+      responses:
+        200:
+          description: OK
+    delete:
+      responses:
+        200:
+          description: OK
   /player/search:
     get:
-      summary:
+      summary: searches for players to add to a lineup
       parameters:
         - name: forename
+          type: string
           in: query
-          minLength: 3
+          minLength: 1
           required: true
         - name: surname
+          type: string
           in: query
-          minLength: 3
+          minLength: 1
           required: true
+        - $ref: '#/parameters/offsetParam'
+        - $ref: '#/parameters/limitParam'
       responses:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/playerSearchResult'
+            type: array
+            items:
+              $ref: '#/definitions/player'
+  /club:
+    get:
+      responses:
+        200:
+          description: OK
+    post:
+      responses:
+        200:
+          description: OK
+    patch:
+      responses:
+        200:
+          description: OK
+    delete:
+      responses:
+        200:
+          description: OK
+  /location:
+    get:
+      responses:
+        200:
+          description: OK
+    post:
+      responses:
+        200:
+          description: OK
+    patch:
+      responses:
+        200:
+          description: OK
+    delete:
+      responses:
+        200:
+          description: OK
+  
